@@ -11,6 +11,9 @@ namespace HarmonyHub
     public class HarmonyClient
     {
         protected bool Wait;
+        protected string _ip;
+        protected int _port;
+        protected string _token;
 
         protected HarmonyClientConnection Xmpp;
 
@@ -36,16 +39,43 @@ namespace HarmonyHub
         /// <param name="token"></param>
         public HarmonyClient(string ipAddress, int port, string token)
         {
-            Xmpp = new HarmonyClientConnection(ipAddress, port);
-            Xmpp.OnLogin += delegate { Wait = false; };
+            _ip = ipAddress;
+            _port = port;
+            _token = token;
 
-            SessionToken = token;
-            string username = string.Format("{0}@x.com", token);
+            //Xmpp = new HarmonyClientConnection(ipAddress, port);
+                       
+            //Xmpp.OnLogin += delegate { Wait = false; };
 
-            Xmpp.OnIq += OnIq;
-            Xmpp.Open(username, token);
+            //SessionToken = token;
+            //string username = string.Format("{0}@x.com", token);
 
-            WaitForData(5);
+            //Xmpp.OnIq += OnIq;
+            //Xmpp.Open(username, token);
+
+            //WaitForData(20);
+
+            GetConnection();
+
+        }
+
+        public HarmonyClientConnection GetConnection()
+        {
+            if (Xmpp == null || !Xmpp.IsConnected)
+            {
+                Xmpp = new HarmonyClientConnection(_ip, _port);
+                Xmpp.OnLogin += delegate { Wait = false; };
+
+                SessionToken = _token;
+                string username = string.Format("{0}@x.com", _token);
+
+                Xmpp.OnIq += OnIq;
+                Xmpp.Open(username, _token);
+
+                WaitForData(20);
+            }
+            
+            return Xmpp;            
         }
 
         #region Send Messages to HarmonyHub
@@ -62,7 +92,7 @@ namespace HarmonyHub
             iqToSend.AddChild(HarmonyDocuments.ConfigDocument());
             iqToSend.GenerateId();
 
-            var iqGrabber = new IqGrabber(Xmpp);
+            var iqGrabber = new IqGrabber(GetConnection());
             iqGrabber.SendIq(iqToSend, 10);
 
             WaitForData(5);
@@ -81,7 +111,7 @@ namespace HarmonyHub
             iqToSend.AddChild(HarmonyDocuments.StartActivityDocument(activityId));
             iqToSend.GenerateId();
 
-            var iqGrabber = new IqGrabber(Xmpp);
+            var iqGrabber = new IqGrabber(GetConnection());
             iqGrabber.SendIq(iqToSend, 10);
 
             WaitForData(5);
@@ -99,7 +129,7 @@ namespace HarmonyHub
             iqToSend.AddChild(HarmonyDocuments.GetCurrentActivityDocument());
             iqToSend.GenerateId();
 
-            var iqGrabber = new IqGrabber(Xmpp);
+            var iqGrabber = new IqGrabber(GetConnection());
             iqGrabber.SendIq(iqToSend, 10);
 
             WaitForData(5);
@@ -119,7 +149,7 @@ namespace HarmonyHub
             iqToSend.AddChild(HarmonyDocuments.IRCommandDocument(deviceId, command));
             iqToSend.GenerateId();
 
-            var iqGrabber = new IqGrabber(Xmpp);
+            var iqGrabber = new IqGrabber(GetConnection());
             iqGrabber.SendIq(iqToSend, 5);
 
             WaitForData(5);
@@ -152,7 +182,7 @@ namespace HarmonyHub
                 i++;
                 if (i == (timeoutSeconds * 2))
                     Wait = false;
-                Thread.Sleep(500);
+                Thread.Sleep(50);
             } while (Wait);
         }
 

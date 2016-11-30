@@ -32,12 +32,12 @@ namespace HarmonyConsole
             HelpText = "Command to send to device")]
         public string Command { get; set; }
 
-        [Option('s', "start", Required = false,
+        [Option('a', "activity", Required = false,
             HelpText = "Activity ID to start")]
         public string ActivityId { get; set; }
 
         [Option('l', "list", Required = false,
-            HelpText = "List devices or activities")]
+            HelpText = "List devices or activities. d = devices; a = activities; ac = commands within an activity, e.g. -l ac ")]
         public string ListType { get; set; }
 
         [Option('g', "get", Required = false,
@@ -77,13 +77,13 @@ namespace HarmonyConsole
                 string deviceId = options.DeviceId;
                 string activityId = options.ActivityId;
 
-                Dns.GetHostEntry(ipAddress);
+                //Dns.GetHostEntry(ipAddress);
 
                 string sessionToken;
 
-                if (File.Exists("SessionToken"))
+                if (File.Exists("SessionToken_" + ipAddress))
                 {
-                    sessionToken = File.ReadAllText("SessionToken");
+                    sessionToken = File.ReadAllText("SessionToken_" + ipAddress);
                     Console.WriteLine("Reusing token: {0}", sessionToken);
                 }
                 else
@@ -99,13 +99,21 @@ namespace HarmonyConsole
                 if (!string.IsNullOrEmpty(deviceId) || options.GetActivity || !string.IsNullOrEmpty(options.ListType))
                 {
                     client = new HarmonyClient(ipAddress, harmonyPort, sessionToken);
-                    client.GetConfig();
 
-                    while (string.IsNullOrEmpty(client.Config)) { }
-                    File.WriteAllText("HubConfig", client.Config);
-                    harmonyConfig = new JavaScriptSerializer().Deserialize<HarmonyConfigResult>(client.Config);
+                    if (!File.Exists("HubConfig_" + ipAddress))
+                    {
+                        client.GetConfig();
+                        while (string.IsNullOrEmpty(client.Config)) { }
+                        File.WriteAllText("HubConfig_" + ipAddress, client.Config);
+                        harmonyConfig = new JavaScriptSerializer().Deserialize<HarmonyConfigResult>(client.Config);
+                    }
+                    else
+                    {
+                        string hubconfig = File.ReadAllText("HubConfig_" + ipAddress);
 
-                }
+                        harmonyConfig = new JavaScriptSerializer().Deserialize<HarmonyConfigResult>(hubconfig);
+                    }                  
+                }                               
 
                 if (!string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(options.Command))
                 {
@@ -119,15 +127,36 @@ namespace HarmonyConsole
                     // just list device control options
                     foreach (var device in harmonyConfig.device.Where(device => device.id == deviceId))
                     {
-                        foreach (Dictionary<string, object> controlGroup in device.controlGroup)
+                        //foreach (Dictionary<string, object> controlGroup in device.controlGroup)
+                        foreach (ControlGroup controlGroup in device.controlGroup)
                         {
-                            foreach (var o in controlGroup.Where(o => o.Key == "name"))
-                            {
-                                Console.WriteLine("{0}:{1}", o.Key, o.Value);
+                            //foreach (var o in controlGroup.Where(o => o.Key == "name"))
+                            //{
+                            //    Console.WriteLine("\n");
+                            //    Console.WriteLine("{0}:{1}", o.Key, o.Value);                                
+                            //}
+                            Console.WriteLine("{0}", controlGroup.name);
+
+                            //foreach (var o2 in controlGroup.Where(o2 => o2.Key == "function"))
+                            foreach (Function func in controlGroup.function)
+                            {                           
+                                //foreach (Dictionary<string, object> cmd in (object[])o2.Value)
+                                //{
+                                //    Console.WriteLine("{0}:{1}", cmd.Single(c => c.Key == "name").Value, cmd.Single(c => c.Key == "label").Value); // ((Dictionary<string, object>)((object[])o2.Value)[1]).Single(c => c.Key == "name"));
+                                //}
+                                Console.WriteLine("{0}:{1}", func.name, func.label);
                             }
+                            
                         }
                     }
                 }
+
+                //get device/commands by activity
+                //((object[])((Dictionary<string,object>)harmonyConfig.activity[0].controlGroup[0]).ToList()[1].Value)[1]
+                //if (null != harmonyConfig && !string.IsNullOrEmpty(activityId) && string.IsNullOrEmpty(options.Command))
+                //{                    
+                    
+                //}
 
                 if (!string.IsNullOrEmpty(activityId))
                 {
@@ -151,8 +180,9 @@ namespace HarmonyConsole
 
                 if (null != harmonyConfig && !string.IsNullOrEmpty(options.ListType))
                 {
-                    if (!options.ListType.Equals("d") && !options.ListType.Equals("a")) return;
+                    //if (!options.ListType.Equals("d") && !options.ListType.Equals("a")) return;
 
+                    //list the activities defined in Harmony Hub
                     if (options.ListType.Equals("a"))
                     {
                         Console.WriteLine("Activities:");
@@ -163,6 +193,7 @@ namespace HarmonyConsole
                         }
                     }
 
+                    //list the devices Harmony knows about
                     if (options.ListType.Equals("d"))
                     {
                         Console.WriteLine("Devices:");
@@ -172,9 +203,53 @@ namespace HarmonyConsole
                             Console.WriteLine(" {0}:{1}", device.id, device.label);
                         }
                     }
+
+                    //List the commands associated with each activity
+                    if (options.ListType.Equals("ac"))
+                    {
+                        foreach (var activity in harmonyConfig.activity)
+                        {
+                            Console.WriteLine(activity.label);
+
+                            //each activity has multiple control Groups that represent groups of commands, eg Numeric Buttons, Nav buttons (arrows), Media Control type (play, ff rwd etc)
+                            //foreach (Dictionary<string, object> controlGroup in activity.controlGroup)
+                            foreach (ControlGroup controlGroup in activity.controlGroup)
+                            {
+
+                                //each controlGroup name
+                                //foreach (var o in controlGroup.Where(o => o.Key == "name"))
+                                //{
+                                //    Console.WriteLine("\n");
+                                //    Console.WriteLine("{0}:{1}", o.Key, o.Value);
+                                //}
+                                Console.WriteLine("\n");
+                                Console.WriteLine("{0}", controlGroup.name);
+
+                                //list the functions for each controlGroup
+                                //the actual command you can send back to the hub is first and a more readable label is second, eg.
+                                //VolumeUp :  Volume Up
+                                //foreach (var o2 in controlGroup.Where(o2 => o2.Key == "function"))
+                                foreach (Function func in controlGroup.function)
+                                {
+                                    //foreach (Dictionary<string, object> cmd in (object[])o2.Value)
+                                    //{
+                                    //    //cmd.ToList()[0].Value
+                                        
+                                    //    Console.WriteLine("{0}:{1}", cmd.Single(c => c.Key == "name").Value, cmd.Single(c => c.Key == "label").Value); // ((Dictionary<string, object>)((object[])o2.Value)[1]).Single(c => c.Key == "name"));
+                                    //}
+                                    Console.WriteLine("{0}:{1}", func.name, func.label);
+
+                                    func.harmonyAction = new JavaScriptSerializer().Deserialize<HarmonyAction>(func.action);
+                                }
+
+                            }
+                        }
+                    }
                 }
 
             } // option parsing
+
+           
         }
 
         public static string LoginToLogitech(string email, string password, string ipAddress, int harmonyPort)
@@ -185,7 +260,7 @@ namespace HarmonyConsole
                 throw new Exception("Could not get token from Logitech server.");
             }
 
-            File.WriteAllText("UserAuthToken", userAuthToken);
+            File.WriteAllText("UserAuthToken_" + ipAddress, userAuthToken);
 
             var authentication = new HarmonyAuthenticationClient(ipAddress, harmonyPort);
 
@@ -195,7 +270,7 @@ namespace HarmonyConsole
                 throw new Exception("Could not swap token on Harmony Hub.");
             }
 
-            File.WriteAllText("SessionToken", sessionToken);
+            File.WriteAllText("SessionToken_" + ipAddress, sessionToken);
 
             Console.WriteLine("Date Time : {0}", DateTime.Now);
             Console.WriteLine("User Token: {0}", userAuthToken);

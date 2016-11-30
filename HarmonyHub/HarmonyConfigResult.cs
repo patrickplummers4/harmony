@@ -25,24 +25,36 @@ namespace HarmonyHub
         {
             return (from deviceItem in device where deviceItem.id == deviceId select deviceItem.label).FirstOrDefault();
         }
+        
     }
 
     /// <summary>
     /// HarmonyHub Activity
     /// </summary>
+    /// 
+    [DataContract]
     public class Activity : IComparable<Activity>
     {
+        [DataMember]
         public string suggestedDisplay { get; set; }
+        [DataMember]
         public string label { get; set; }
+        [DataMember]
         public string id { get; set; }
+        [DataMember]
         public string activityTypeDisplayName { get; set; }
-        public List<object> controlGroup { get; set; }
+        public List<ControlGroup> controlGroup { get; set; }
         public List<object> sequences { get; set; }
+        [DataMember]
         public int activityOrder { get; set; }
+        [DataMember]
         public bool isTuningDefault { get; set; }
         public Dictionary<string, FixItCommand> fixit { get; set; }
+        [DataMember]
         public string type { get; set; }
+        [DataMember]
         public string icon { get; set; }
+        [DataMember]
         public string baseImageUri { get; set; }
 
         public int CompareTo(Activity other)
@@ -54,23 +66,41 @@ namespace HarmonyHub
     /// <summary>
     /// HarmonyHub Device
     /// </summary>
+    /// 
+    [DataContract]
     public class Device : IComparable<Device>
     {
+        [DataMember]
         public int Transport { get; set; }
+        [DataMember]
         public string suggestedDisplay { get; set; }
+        [DataMember]
         public string deviceTypeDisplayName { get; set; }
+        [DataMember]
         public string label { get; set; }
+        [DataMember]
         public string id { get; set; }
+        //[DataMember]
         public List<int> Capabilities { get; set; }
+        [DataMember]
         public string type { get; set; }
+        [DataMember]
         public int DongleRFID { get; set; }
-        public List<object> controlGroup { get; set; }
+        //[DataMember]
+        public List<ControlGroup> controlGroup { get; set; }
+        [DataMember]
         public int ControlPort { get; set; }
+        [DataMember]
         public bool IsKeyboardAssociated { get; set; }
+        [DataMember]
         public string model { get; set; }
+        [DataMember]
         public string deviceProfileUri { get; set; }
+        [DataMember]
         public string manufacturer { get; set; }
+        [DataMember]
         public string icon { get; set; }
+        [DataMember]
         public string isManualPower { get; set; }
 
         public int CompareTo(Device other)
@@ -134,5 +164,46 @@ namespace HarmonyHub
         /// HarmonyHub command to send to device
         /// </summary>
         public string command { get; set; }
+    }
+
+    public class ControlGroup
+    {
+        public string name { get; set; }
+
+        public List<Function> function { get; set; }
+    }
+
+    public class Function
+    {
+        public string action { get; set; }
+
+        public string name { get; set; }
+
+        public string label { get; set; }
+
+        public HarmonyAction harmonyAction { get; set; }
+
+    }
+
+    public class HarmonyActivityCommand
+    {
+        public string ActivityLabel { get; set; }
+        public string ActivityId { get; set; }        
+        public string DeviceLabel { get; set; }
+        public string DeviceId { get; set; }
+        public string CommandLabel { get; set; }
+        public string CommandId { get; set; }
+        public string controlGroupLabel { get; set; }
+        public string CommandToSend { get; set; }
+    }
+
+    public class HarmonyDeviceCommand
+    {        
+        public string DeviceLabel { get; set; }
+        public string DeviceId { get; set; }
+        public string CommandLabel { get; set; }
+        public string CommandId { get; set; }
+        public string controlGroupLabel { get; set; }
+        public string CommandToSend { get; set; }
     }
 }

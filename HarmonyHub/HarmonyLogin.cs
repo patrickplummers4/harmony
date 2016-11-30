@@ -15,7 +15,7 @@ namespace HarmonyHub
                 throw new Exception("Could not get token from Logitech server.");
             }
 
-            File.WriteAllText("UserAuthToken", userAuthToken);
+            File.WriteAllText("UserAuthToken_" + ipAddress, userAuthToken);
 
             var authentication = new HarmonyAuthenticationClient(ipAddress, harmonyPort);
 
@@ -25,7 +25,7 @@ namespace HarmonyHub
                 throw new Exception("Could not swap token on Harmony Hub.");
             }
 
-            File.WriteAllText("SessionToken", sessionToken);
+            File.WriteAllText("SessionToken_" + ipAddress, sessionToken);
 
             //Console.WriteLine("Date Time : {0}", DateTime.Now);
             //Console.WriteLine("User Token: {0}", userAuthToken);
