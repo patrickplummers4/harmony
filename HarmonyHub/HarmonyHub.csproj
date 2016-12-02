@@ -55,6 +55,7 @@
     <Compile Include="HarmonyDocuments.cs" />
     <Compile Include="HarmonyHubDefinition.cs" />
     <Compile Include="HarmonyLogin.cs" />
+    <Compile Include="HarmonyMimeTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

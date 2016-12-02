@@ -16,21 +16,43 @@ needs to be triggered (similar to how the normal harmony remote works).
 * Basic support for CastleOS home automation.  Handles lights, dimmers, color changing bulbs, and scenes.
 * Outputs VoxCommando XML files for the CastleOS device list and actions.
 
-To install it as a Windows service, run the InstallService.bat file from a command window (cmd.exe) running as Administrator.
+RUNNING IN VISUAL STUDIO (DEBUG MODE)
 
 To run the service as a console app in Visual Studio (debug mode), the easiest thing to do is run Visual Studio as an Administrator, select the HarmonyService project as the startup project and make sure that 'console' is passed as a command line argument (Project Properties -> Debug).
 
 The reason for running as Administrator is so that the WCF service can self-register on the port defined in the app.config. If you don't wish to do this, you'll need to use the netsh windows command to assign the appropriate rights.
 
-Open a command window as an Administrator:
+INSTALLTION AS A SERVICE
 
-Determine free ports:
+1. Extract the files from the zip archive into a folder of your choosing.
+
+2. Open InstallService.bat in an editor like notepad and verify any paths.  (If you run it from the same folder, it should work as-is).
+
+3. Open a Command Window (Run -> cmd.exe) as ADMINISTRATOR.
+
+4. Determine free ports by running this command:
 
 netsh http show urlacl
 
-See command line options:
+(See also command line options)
 
 netsh http add urlacl help
+
+5.  Assign the user rights to the web service address.  Replace 8085 with the port of your choosing and domain\username with the username identity that will 
+
+netsh http add urlacl "http://+:8085/HarmonyService" user=domain\user
+
+To install it as a Windows service, run the InstallService.bat file from a command window (cmd.exe) running as Administrator.
+
+
+
+
+
+Open a command window as an Administrator:
+
+
+
+
 
 Common command for this service:
 

@@ -82,8 +82,15 @@ namespace HarmonyService
             cWrapper = new CastleOSWrapper();
             CastleOSUser = ConfigurationManager.AppSettings["CastleOSName"].ToString();
             CastleOSPassword =  ConfigurationManager.AppSettings["CastleOSPassword"].ToString();
-            CastleOSToken = cWrapper.AuthenticateUser(CastleOSUser, CastleOSPassword);
-            //cwrap.GetDevices();
+
+            try
+            {
+                if (CastleOSUser != "")
+                {
+                    CastleOSToken = cWrapper.AuthenticateUser(CastleOSUser, CastleOSPassword);
+                }
+            }
+            catch { }
 
             for (int i = 0; i<ipAddresses.Count; i++)
             {
@@ -137,17 +144,38 @@ namespace HarmonyService
             dtLastConnectCastleOS = DateTime.Now;
             timerKeepAlive = new System.Timers.Timer(5000);
             timerKeepAlive.Elapsed += new System.Timers.ElapsedEventHandler(timerKeepAliveElapsed);
-            timerKeepAlive.Enabled = true;
+
+            if (CastleOSUser != "")
+            {
+                timerKeepAlive.Enabled = true;
+            }
 
         }
 
         private void timerKeepAliveElapsed(object sender, EventArgs e)
         {
-            //keep alive for CastleOS
-            if (dtLastConnectCastleOS.AddMinutes(2) < DateTime.Now)
+            try
             {
-                Program.cWrapper.GetAppVersion();
-                dtLastConnectCastleOS = DateTime.Now;
+                //keep alive for CastleOS
+                if (CastleOSUser != "")
+                {
+                    if (dtLastConnectCastleOS.AddMinutes(2) < DateTime.Now)
+                    {
+                        Program.cWrapper.GetAppVersion();
+                        dtLastConnectCastleOS = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    timerKeepAlive.Enabled = false;
+                    timerKeepAlive.Stop();
+                }
+            }
+            catch 
+            {  //ignore because this means the service isn't there
+                timerKeepAlive.Enabled = false;
+                timerKeepAlive.Stop();
+
             }
         }
 

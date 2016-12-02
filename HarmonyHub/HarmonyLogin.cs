@@ -42,6 +42,11 @@ namespace HarmonyHub
         /// <returns>Logitech UserAuthToken</returns>
         public static string GetUserAuthToken(string username, string password)
         {
+            //doesn't work as of 11/18/2016
+            return "none";  //changed to pair locally
+
+            //TODO:  Clean this up
+
             const string logitechAuthUrl = "https://svcs.myharmony.com/CompositeSecurityServices/Security.svc/json/GetUserAuthToken";
 
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(logitechAuthUrl);
@@ -69,7 +74,11 @@ namespace HarmonyHub
             {
                 var result = streamReader.ReadToEnd();
                 var harmonyData = new JavaScriptSerializer().Deserialize<GetUserAuthTokenResultRootObject>(result);
+
+                //doesn't work as of 11/18/2016
                 return harmonyData.GetUserAuthTokenResult.UserAuthToken;
+                
+
             }
         }
     }

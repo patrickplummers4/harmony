@@ -81,7 +81,14 @@ namespace HarmonyHub
             var element = new Element("oa");
             element.Attributes.Add("xmlns", "connect.logitech.com");
             element.Attributes.Add("mime", "vnd.logitech.connect/vnd.logitech.pair");
-            element.Value = string.Format("token={0}:name={1}#{2}", token, "foo", "iOS6.0.1#iPhone");
+            if (token != "" && token != "none")
+            {
+                element.Value = string.Format("token={0}:name={1}#{2}", token, "foo", "iOS6.0.1#iPhone");
+            }
+            else
+            {
+                element.Value = string.Format("method=pair:name={1}#{2}", token, "foo", "iOS6.0.1#iPhone");
+            }
 
             document.AddChild(element);
             return document;

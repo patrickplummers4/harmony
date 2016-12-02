@@ -1,4 +1,4 @@
-﻿SET PATH=%path%;%windir%\Microsoft.NET\Framework\v4.0.30319
+﻿set PATH=%path%;%windir%\Microsoft.NET\Framework\v4.0.30319
 
 REM Uninstall the Service if it exists already
 
